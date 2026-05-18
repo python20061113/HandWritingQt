@@ -1,6 +1,6 @@
 # HandWritingQt
 ```markdown
-# HandWriting 手写数字识别组件
+# HandWriting 手写数字识别组件//曾哥——古希腊掌管诺手的神
 
 ## 1. 概述
 
