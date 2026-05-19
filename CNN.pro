@@ -1,6 +1,6 @@
 QT       += core gui
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
-
+QT += multimedia multimediawidgets
 CONFIG += c++17
 CONFIG += warn_off
 # 不要强制写 CONFIG += debug，由 IDE 自己管理

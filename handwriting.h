@@ -23,6 +23,7 @@
 #include <torch/script.h>
 #include<QTimer>
 
+
     class HandWriting: public QWidget
 {
     Q_OBJECT
@@ -414,11 +415,11 @@ public:
     void loadModel()
     {
         try {
-            QString modelPath = QCoreApplication::applicationDirPath() + "/mnist_model.pt";
+            QString modelPath=QCoreApplication::applicationDirPath() + "/mnist_model.pt";
             module = torch::jit::load(modelPath.toStdString());
             module.eval();
             model_loaded=true;
-            qDebug() << "Model loaded.";
+            qDebug() << "Model loaded. PATH:" << modelPath;
 
         } catch (const c10::Error& e) {
             qDebug() << "Error loading model." << e.what();
