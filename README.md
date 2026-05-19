@@ -18,7 +18,105 @@ main.cpp             // 应用程序入口
 mnist_model.pt       // 预训练模型文件
 resources/           // 背景图片等资源
 ```
+```markdown
+# 环境配置说明
 
+本项目依赖 PyTorch 的 C++ 库 **LibTorch**。在开始协作前，请按以下步骤配置您的开发环境。
+
+---
+
+## 1. 下载 LibTorch
+
+1. 访问 [PyTorch 官网](https://pytorch.org/)，找到 **LibTorch** 部分。
+2. 根据您的操作系统和硬件选择配置（推荐从 **CPU 版本** 开始）：
+   - **Stable** 版本
+   - **Windows** / Linux / macOS
+   - **C++ / Java** 语言
+   - **CPU** 或 **GPU**（若选择 GPU，需额外安装 CUDA）
+3. 下载与您 Qt 版本匹配的压缩包（例如 `libtorch-win-shared-with-deps-2.6.0+cpu.zip`）。
+4. 解压到本地一个固定路径，例如 `D:\libtorch` 或 `C:\libtorch`。
+
+---
+
+## 2. 设置 LibTorch 路径
+
+您需要让 Qt 项目知道 LibTorch 的安装位置。有两种方式，任选其一即可。
+
+### 方法一：修改项目 `.pro` 文件
+
+打开项目的 `.pro` 文件，找到 `LIBTORCH_DIR` 变量，将其改为您的实际路径：
+
+```qmake
+# 请修改为您的 LibTorch 解压路径
+LIBTORCH_DIR = D:/libtorch
+```
+
+### 方法二：设置系统环境变量（推荐）
+
+- 新建系统环境变量 `TORCH_DIR`，值为 LibTorch 的根目录（例如 `D:\libtorch`）。
+- 将 `%TORCH_DIR%\lib` 添加到系统 `PATH` 环境变量中（确保运行时能找到 `.dll` 文件）。
+
+设置完成后，请**重启 Qt Creator** 或重新打开终端。
+
+---
+
+## 3. 配置 Qt 编译器
+
+LibTorch 要求使用 **MSVC 64 位** 编译器。
+
+- 确保您已安装 Visual Studio 2019 或 2022，并勾选了“**使用 C++ 的桌面开发**”工作负荷。
+- 在 Qt Creator 中，将当前项目的构建套件 (Kit) 切换为 **MSVC 2019/2022 64-bit**。
+
+---
+
+## 4. 编译与运行注意事项
+
+### 构建模式
+- 请使用 **Release** 模式编译。LibTorch 官方预编译包为 Release 版本，Debug 模式可能导致链接失败。
+  - 在 Qt Creator 左下角选择 `Release`。
+
+### 动态链接库（DLL）
+- 将 LibTorch 库目录下的所有 `.dll` 文件复制到您的可执行文件所在目录。
+  - 例如：`D:\libtorch\lib` 中的 `c10.dll`、`torch_cpu.dll` 等 → 复制到 `build\...\release\` 目录。
+
+### 清理与重建
+- 修改配置后，务必执行：
+  - `构建` → `清理项目`
+  - `构建` → `运行 qmake`
+  - `构建` → `重新构建项目`
+
+---
+
+## 5. 常见问题检查清单
+
+请逐项确认：
+
+- [ ] LibTorch 已下载并解压到本地路径。
+- [ ] `.pro` 文件中的 `LIBTORCH_DIR` 路径正确，或环境变量 `TORCH_DIR` 已设置。
+- [ ] 系统 `PATH` 包含 `%TORCH_DIR%\lib`。
+- [ ] Qt Creator 的构建套件为 **MSVC 2022 64-bit**（或 2019 64-bit）。
+- [ ] 选择了 **Release** 构建模式。
+- [ ] 运行时所需的所有 `.dll` 文件已复制到 `.exe` 所在目录。
+- [ ] 已完成清理、qmake、重新构建。
+
+---
+
+## 6. 验证配置
+
+编译并运行项目，在控制台输出中看到以下信息即表示成功：
+
+```
+Model loaded.
+Hello LibTorch! Tensor:
+[ ... ]
+```
+
+如果遇到加载模型失败或缺少 DLL 的错误，请重新检查上述步骤。
+
+---
+
+
+```
 ---
 
 ## 2. 类成员总览
