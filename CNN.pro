@@ -47,7 +47,14 @@ HEADERS += \
 FORMS += \
     mainwindow.ui
 
+TRANSLATIONS += translations/lang_zh_CN.ts \
+                translations/lang_zh_HK.ts \
+                translations/lang_zh_TW.ts \
+                translations/lang_en.ts
 # ==================== 部署规则 ====================
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+RESOURCES += \
+    res.qrc

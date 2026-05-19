@@ -1,0 +1,11 @@
+<RCC>
+    <qresource prefix="/bgImage">
+        <file>SD006CB.png</file>
+    </qresource>
+    <qresource prefix="/">
+        <file>translations/lang_zh_CN.qm</file>
+        <file>translations/lang_zh_HK.qm</file>
+        <file>translations/lang_zh_TW.qm</file>
+        <file>translations/lang_en.qm</file>
+    </qresource>
+</RCC>
