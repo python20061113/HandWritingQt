@@ -19,72 +19,68 @@
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="22"/>
-        <location filename="../mainwindow.cpp" line="105"/>
+        <location filename="../mainwindow.cpp" line="106"/>
         <source>Set Label</source>
         <translation>设置标签</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="23"/>
-        <location filename="../mainwindow.cpp" line="106"/>
+        <location filename="../mainwindow.cpp" line="107"/>
         <source>Pending...</source>
         <translation>等待识别...</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="25"/>
-        <location filename="../mainwindow.cpp" line="107"/>
+        <location filename="../mainwindow.cpp" line="108"/>
         <source>Tool</source>
         <translation>工具</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="34"/>
-        <location filename="../mainwindow.cpp" line="108"/>
-        <location filename="../mainwindow.cpp" line="120"/>
+        <location filename="../mainwindow.cpp" line="109"/>
+        <location filename="../mainwindow.cpp" line="122"/>
         <source>Language</source>
         <translation>语言</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="41"/>
-        <location filename="../mainwindow.cpp" line="109"/>
+        <location filename="../mainwindow.cpp" line="42"/>
+        <location filename="../mainwindow.cpp" line="110"/>
         <source>Recognize(Ctrl+R)</source>
         <translation>识别</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="42"/>
-        <location filename="../mainwindow.cpp" line="110"/>
+        <location filename="../mainwindow.cpp" line="43"/>
+        <location filename="../mainwindow.cpp" line="111"/>
         <source>Multi-Recognize</source>
         <translation>多项识别</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="57"/>
-        <location filename="../mainwindow.cpp" line="111"/>
+        <location filename="../mainwindow.cpp" line="58"/>
+        <location filename="../mainwindow.cpp" line="112"/>
         <source>Clear(Ctrl+C)</source>
         <translation>清空(Ctrl+C)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="59"/>
-        <location filename="../mainwindow.cpp" line="112"/>
+        <location filename="../mainwindow.cpp" line="60"/>
+        <location filename="../mainwindow.cpp" line="113"/>
         <source>Save(Ctrl+S)</source>
         <translation>保存(Ctrl+S)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="115"/>
         <source>English</source>
-        <translation>English</translation>
+        <translation type="vanished">English</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="116"/>
         <source>简体中文（中国）</source>
-        <translation>简体中文（中国）</translation>
+        <translation type="vanished">简体中文（中国）</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="117"/>
         <source>繁體中文（台灣）</source>
-        <translation>繁體中文（台灣）</translation>
+        <translation type="vanished">繁體中文（台灣）</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="118"/>
         <source>繁體中文（香港）</source>
-        <translation>繁體中文（香港）</translation>
+        <translation type="vanished">繁體中文（香港）</translation>
     </message>
 </context>
 </TS>

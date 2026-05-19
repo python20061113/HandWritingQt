@@ -13,5 +13,11 @@ HandWriting::HandWriting(QWidget *parent) : QWidget(parent)
 
     background.setDevicePixelRatio(devicePixelRatio());
     setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
-
+    timer=new QTimer(this);
+    timer->setSingleShot(true);
+    connect(timer,&QTimer::timeout,this,[this](){
+        this->recognize(); //update output
+        this->timer->stop();
+        Q_EMIT(recFinished(output));
+    });
 }

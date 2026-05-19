@@ -21,7 +21,7 @@
 #include<QKeyEvent>
 #include <torch/torch.h>
 #include <torch/script.h>
-
+#include<QTimer>
 
     class HandWriting: public QWidget
 {
@@ -196,6 +196,7 @@ private:
     bool model_loaded=false;
     torch::jit::script::Module module;
     QString output="";
+    QTimer* timer;
     void drawPoint(const QPoint& pos)
     {
         QPainter painter(&canvas);
@@ -344,7 +345,9 @@ private:
     {
         if(ev->button()==Qt::MouseButton::LeftButton)
         {
+            const int waiting_time=300;
             is_drawing=false;
+            timer->start(waiting_time);
         }
     } //set is_drawing to false when release left button
 
@@ -426,5 +429,7 @@ protected:
 
     // void mouseReleaseEvent(QMouseEvent* ev)override{qDebug() << "Mouse released"<< ev->pos();};
     // void mouseMoveEvent(QMouseEvent* ev) override{qDebug() << "Mouse moved" << ev->pos();};
+Q_SIGNALS:
+    void recFinished(const QString& str);
 };
 #endif // HANDWRITING_H

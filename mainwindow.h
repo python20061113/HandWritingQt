@@ -8,6 +8,7 @@
 #include<QComboBox>
 #include<QTranslator>
 #include<QApplication>
+#include<QTimer>
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class MainWindow;

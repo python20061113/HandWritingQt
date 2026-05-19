@@ -18,28 +18,31 @@ MainWindow::MainWindow(QWidget *parent)
 
     handwriting->setFocusPolicy(Qt::StrongFocus);
     handwriting->loadBackground(handwriting->getBgPath());
-    label = new QLabel(handwriting);
+    label = new QLabel(this);
     label->setText(tr("Set Label"));
-    recLabel = new QLabel(tr("Pending..."),handwriting);
+    recLabel = new QLabel(tr("Pending..."),this);
     recLabel->show();
     toolBar = addToolBar(tr("Tool"));
     // recLabel->setBaseSize(100,100);
 
-    spinBox = new QSpinBox(handwriting);
+    spinBox = new QSpinBox(this);
     spinBox->setRange(0,9);
     spinBox->setSingleStep(1);
     spinBox->setValue(0);
     //spinBox for label setting
-    lang = new QComboBox(handwriting);
+    lang = new QComboBox(this);
     lang->setToolTip(tr("Language"));
     lang->addItem("English","en");
     lang->addItem("简体中文（中国）","zh_CN");
     lang->addItem("繁體中文（台灣）","zh_TW");
     lang->addItem("繁體中文（香港）","zh_HK");
+    lang->addItem("Svenska","sv");
     connect(lang,&QComboBox::currentIndexChanged,this,&MainWindow::switchLanguage);
 
     recAction = new QAction(tr("Recognize(Ctrl+R)"),this);
     recMultAction =new QAction(tr("Multi-Recognize"),this);
+    connect(handwriting, &HandWriting::recFinished,
+            recLabel, &QLabel::setText);
     connect(recAction,&QAction::triggered,this,
             [this,handwriting]()
             {handwriting->recognize();
@@ -69,12 +72,16 @@ MainWindow::MainWindow(QWidget *parent)
     connect(spinBox,QOverload<int>::of(&QSpinBox::valueChanged),handwriting,&HandWriting::setLabel);
     // setCentralWidget(handwriting);
 
+
     handwriting->loadModel();
     QString lastLang = QSettings().value("language", "en").toString();
     int idx = lang->findData(lastLang);
     if (idx != -1) lang->setCurrentIndex(idx);
     else lang->setCurrentIndex(0);
     qDebug() << handwriting->size();
+    toolBar->show();
+    qDebug() << "Toolbar visible:" << toolBar->isVisible();
+    qDebug() << "Toolbar actions count:" << toolBar->actions().size();
 }
 void MainWindow::switchLanguage(int index) {
     QString langCode = "lang_"+lang->itemData(index).toString();
@@ -112,10 +119,11 @@ void MainWindow::retranslateUi()
     saveAction->setText(tr("Save(Ctrl+S)"));
     lang->blockSignals(true);
     int idx = lang->currentIndex();
-    lang->setItemText(0, tr("English"));
-    lang->setItemText(1, tr("简体中文（中国）"));
-    lang->setItemText(2, tr("繁體中文（台灣）"));
-    lang->setItemText(3, tr("繁體中文（香港）"));
+    lang->setItemText(0, "English");
+    lang->setItemText(1, "简体中文（中国）");
+    lang->setItemText(2, "繁體中文（台灣）");
+    lang->setItemText(3, "繁體中文（香港）");
+    lang->setItemText(4,"Svenska");
     lang->setCurrentIndex(idx);
     lang->setToolTip(tr("Language"));
     lang->blockSignals(false);
