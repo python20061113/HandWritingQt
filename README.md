@@ -72,8 +72,8 @@ LibTorch 要求使用 **MSVC 64 位** 编译器。
 ## 4. 编译与运行注意事项
 
 ### 构建模式
-- 请使用 **Release** 模式编译。LibTorch 官方预编译包为 Release 版本，Debug 模式可能导致链接失败。
-  - 在 Qt Creator 左下角选择 `Release`。
+- 请使用 **Debug** 模式编译。
+  - 在 Qt Creator 左下角选择 `Debug`（一般默认就是）。
 
 ### 动态链接库（DLL）
 - 将 LibTorch 库目录下的所有 `.dll` 文件复制到您的可执行文件所在目录。
