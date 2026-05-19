@@ -5,6 +5,7 @@
 #include<QScrollBar>
 #include<QSpinBox>
 #include<QLabel>
+#include<QSettings>
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -14,38 +15,111 @@ MainWindow::MainWindow(QWidget *parent)
     // qDebug() << "Button visible:" << ui->clearButton->isVisible();
     // qDebug() << "Button size:" << ui->clearButton->size();
     auto handwriting = ui->widget;
-    handwriting->setFocusPolicy(Qt::StrongFocus);
-    toolBar = addToolBar("Tool");
 
+    handwriting->setFocusPolicy(Qt::StrongFocus);
+    handwriting->loadBackground(handwriting->getBgPath());
     label = new QLabel(handwriting);
-    label->setText("Set Label");
-    recLabel = new QLabel(handwriting);
+    label->setText(tr("Set Label"));
+    recLabel = new QLabel(tr("Pending..."),handwriting);
+    recLabel->show();
+    toolBar = addToolBar(tr("Tool"));
+    // recLabel->setBaseSize(100,100);
 
     spinBox = new QSpinBox(handwriting);
     spinBox->setRange(0,9);
     spinBox->setSingleStep(1);
     spinBox->setValue(0);
     //spinBox for label setting
+    lang = new QComboBox(handwriting);
+    lang->setToolTip(tr("Language"));
+    lang->addItem("English","en");
+    lang->addItem("简体中文（中国）","zh_CN");
+    lang->addItem("繁體中文（台灣）","zh_TW");
+    lang->addItem("繁體中文（香港）","zh_HK");
+    connect(lang,&QComboBox::currentIndexChanged,this,&MainWindow::switchLanguage);
 
-    QAction* recAction = new QAction("Recognize(Ctrl+R)",this);
-    connect(recAction,&QAction::triggered,handwriting,&HandWriting::recognize); //update storged output
-    connect(recAction,&QAction::triggered,recLabel,
+    recAction = new QAction(tr("Recognize(Ctrl+R)"),this);
+    recMultAction =new QAction(tr("Multi-Recognize"),this);
+    connect(recAction,&QAction::triggered,this,
             [this,handwriting]()
-            {recLabel->setText(handwriting->getOutput());recLabel->show();}); //update recLabel w/ output so that you can see
+            {handwriting->recognize();
+            recLabel->setText(handwriting->getOutput());
+            recLabel->show();});
+    connect(recMultAction,&QAction::triggered,this,
+            [this,handwriting](){
+        handwriting->multiRecognize();
+        recLabel->setText(handwriting->getOutput());
+        recLabel->show();
+    });
+    //update recLabel w/ output so that you can see
 
-    toolBar->addAction("Clear(Ctrl+C)", handwriting, &HandWriting::clear);
-    toolBar->addAction("Save(Ctrl+S)", handwriting, &HandWriting::saveToImage);
+    toolBar->addWidget(lang);
+    clearAction = new QAction(tr("Clear(Ctrl+C)"),this);
+    connect(clearAction,&QAction::triggered,handwriting,&HandWriting::clear);
+    saveAction = new QAction(tr("Save(Ctrl+S)"),this);
+    connect(saveAction,&QAction::triggered,handwriting,&HandWriting::saveToImage);
+    toolBar->addAction(clearAction);
+    toolBar->addAction(saveAction);
     toolBar->addAction(recAction);
+    toolBar->addAction(recMultAction);
 
     toolBar->addWidget(label);
     toolBar->addWidget(spinBox);
-
+    toolBar->addWidget(recLabel);
     connect(spinBox,QOverload<int>::of(&QSpinBox::valueChanged),handwriting,&HandWriting::setLabel);
     // setCentralWidget(handwriting);
 
     handwriting->loadModel();
+    QString lastLang = QSettings().value("language", "en").toString();
+    int idx = lang->findData(lastLang);
+    if (idx != -1) lang->setCurrentIndex(idx);
+    else lang->setCurrentIndex(0);
+    qDebug() << handwriting->size();
 }
+void MainWindow::switchLanguage(int index) {
+    QString langCode = "lang_"+lang->itemData(index).toString();
+    // 加载对应的 .qm 文件（从文件系统）
+    QTranslator *newTranslator = new QTranslator;
 
+    if (newTranslator->load(":/translations/" + langCode + ".qm")) {
+
+        // 移除旧的翻译器
+        if (current_tr) {
+            qApp->removeTranslator(current_tr);
+            delete current_tr;   // 可选，不删除也可以
+        }
+        current_tr = newTranslator;
+        qApp->installTranslator(current_tr);
+        // 刷新界面
+        ui->retranslateUi(this);
+        retranslateUi();
+        QSettings().setValue("language", langCode);
+    } else {
+        delete newTranslator;
+        qDebug() << "Failed to load translation:" << langCode;
+    }
+}
+void MainWindow::retranslateUi()
+{
+    ui->retranslateUi(this);
+    label->setText(tr("Set Label"));
+    recLabel->setText(tr("Pending..."));
+    toolBar->setToolTip(tr("Tool"));
+    lang->setToolTip(tr("Language"));
+    recAction->setText(tr("Recognize(Ctrl+R)"));
+    recMultAction->setText(tr("Multi-Recognize"));
+    clearAction->setText(tr("Clear(Ctrl+C)"));
+    saveAction->setText(tr("Save(Ctrl+S)"));
+    lang->blockSignals(true);
+    int idx = lang->currentIndex();
+    lang->setItemText(0, tr("English"));
+    lang->setItemText(1, tr("简体中文（中国）"));
+    lang->setItemText(2, tr("繁體中文（台灣）"));
+    lang->setItemText(3, tr("繁體中文（香港）"));
+    lang->setCurrentIndex(idx);
+    lang->setToolTip(tr("Language"));
+    lang->blockSignals(false);
+}
 MainWindow::~MainWindow()
 {
     delete ui;

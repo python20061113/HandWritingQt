@@ -3,12 +3,35 @@
 #include <torch/torch.h>
 #include <QApplication>
 #include <QDebug>
+#include<QTranslator>
 #include "mainwindow.h"
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
+    QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
+    QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+    // QTranslator* tr_zhTW = new QTranslator();
+    // if(tr_zhTW->load(":/translation/lang_zh_TW.qm"))
+    // {
+    //     a.installTranslator(tr_zhTW);
+    // }
+    // else
+    // {
+    //     qDebug()<<"translation NOT LOADED";
+    // }
+    // QTranslator* tr_zhCN=new QTranslator();
+    // if(tr_zhCN->load("lang_zh_CN.qm"))
+    // {
+    //     a.installTranslator(tr_zhCN);
+    // }
+    // QTranslator* tr_zhHK=new QTranslator();
+    // if(tr_zhHK->load("lang_zh_HK.qm"))
+    // {
+    //     a.installTranslator(tr_zhHK);
+    // }
     MainWindow w;
+    static auto trans = w.current_tr;
     w.show();
 
     //test
