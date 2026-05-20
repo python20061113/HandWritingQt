@@ -162,7 +162,7 @@ public:
 
         if (img.save(filePath, "PNG")) {
             qDebug() << "Saved to" << filePath;
-            clear();
+            // clear();
         } else {
             qDebug() << "Fail to save the canvas";
         }

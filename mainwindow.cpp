@@ -39,6 +39,19 @@ MainWindow::MainWindow(QWidget *parent)
     lang->addItem("Svenska","sv");
     connect(lang,&QComboBox::currentIndexChanged,this,&MainWindow::switchLanguage);
 
+    saveSound = new QSoundEffect(this);
+    saveSound->setSource(QUrl("qrc:/media/yoshino_save-new.wav"));
+    saveSound->setVolume(1.0);
+
+    exitSound = new QSoundEffect(this);
+    exitSound->setSource(QUrl("qrc:/media/yoshino_goodbye-new.wav"));
+
+    showSound = new QSoundEffect(this);
+    showSound->setSource(QUrl("qrc:/media/yoshino_yuzu-new.wav"));
+
+    clearSound = new QSoundEffect(this);
+    clearSound->setSource(QUrl("qrc:/media/yoshino_reset-new.wav"));
+
     recAction = new QAction(tr("Recognize(Ctrl+R)"),this);
     recMultAction =new QAction(tr("Multi-Recognize"),this);
     connect(handwriting, &HandWriting::recFinished,
@@ -58,9 +71,16 @@ MainWindow::MainWindow(QWidget *parent)
 
     toolBar->addWidget(lang);
     clearAction = new QAction(tr("Clear(Ctrl+C)"),this);
+    connect(clearAction,&QAction::triggered,this,[this](){clearSound->play();});
     connect(clearAction,&QAction::triggered,handwriting,&HandWriting::clear);
+
     saveAction = new QAction(tr("Save(Ctrl+S)"),this);
+    connect(saveAction, &QAction::triggered, this,
+            [this]() {
+        saveSound->play();
+    });
     connect(saveAction,&QAction::triggered,handwriting,&HandWriting::saveToImage);
+
     toolBar->addAction(clearAction);
     toolBar->addAction(saveAction);
     toolBar->addAction(recAction);
@@ -71,6 +91,7 @@ MainWindow::MainWindow(QWidget *parent)
     toolBar->addWidget(recLabel);
     connect(spinBox,QOverload<int>::of(&QSpinBox::valueChanged),handwriting,&HandWriting::setLabel);
     // setCentralWidget(handwriting);
+
 
 
     handwriting->loadModel();
@@ -128,6 +149,7 @@ void MainWindow::retranslateUi()
     lang->setToolTip(tr("Language"));
     lang->blockSignals(false);
 }
+
 MainWindow::~MainWindow()
 {
     delete ui;
