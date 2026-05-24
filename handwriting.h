@@ -30,7 +30,17 @@
 public:
     torch::Tensor imgToTensor(QImage img)
     {
-        img = getProcessedImg(img);
+        // 1. 先裁剪出数字区域（去除周边大片黑色）
+        img = cropToContent(img);
+        if (img.isNull()) {
+            // 如果裁剪后为空，返回全零张量
+            return torch::zeros({1, 1, 28, 28});
+        }
+        // 2. 缩放到 28x28，保持宽高比并居中填充黑边
+        img = resizeAndPad(img, 28);
+        // 3. 转换为灰度图
+        img = img.convertToFormat(QImage::Format_Grayscale8);
+        // 4. 归一化和标准化
         std::vector<float> data(28*28);
         for(int i=0;i<28;++i)
         {
@@ -44,6 +54,52 @@ public:
         }
         torch::Tensor tensor=torch::from_blob(data.data(),{1,1,28,28},torch::kFloat32).clone();
         return tensor;
+    }
+    // [NEW] 裁剪图像，只保留有笔画的区域，并添加边距
+    QImage cropToContent(const QImage& src) {
+        // 转为灰度方便判断
+        QImage gray = src.convertToFormat(QImage::Format_Grayscale8);
+        int w = gray.width();
+        int h = gray.height();
+
+        int top = h, bottom = 0, left = w, right = 0;
+        for (int y = 0; y < h; ++y) {
+            const uchar* line = gray.constScanLine(y);
+            for (int x = 0; x < w; ++x) {
+                // 假设白底黑字时阈值 < 200，黑底白字时阈值 > 50
+                // 你的画板是黑底白字（白色笔画），所以用 > 50
+                if (line[x] > 50) {
+                    if (x < left) left = x;
+                    if (x > right) right = x;
+                    if (y < top) top = y;
+                    if (y > bottom) bottom = y;
+                }
+            }
+        }
+
+        // 如果没有找到任何笔画，返回原图
+        if (left > right || top > bottom) return src;
+
+        // 增加边距，避免数字贴边
+        int margin = 4;
+        left = qMax(0, left - margin);
+        right = qMin(w - 1, right + margin);
+        top = qMax(0, top - margin);
+        bottom = qMin(h - 1, bottom + margin);
+
+        QRect bbox(left, top, right - left + 1, bottom - top + 1);
+        return src.copy(bbox);
+    }
+    // [NEW] 缩放图像并居中填充到指定尺寸（保持宽高比）
+    QImage resizeAndPad(const QImage& src, int targetSize) {
+        QImage scaled = src.scaled(targetSize, targetSize, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        QImage dest(targetSize, targetSize, QImage::Format_Grayscale8);
+        dest.fill(0); // 黑色背景
+        int x = (targetSize - scaled.width()) / 2;
+        int y = (targetSize - scaled.height()) / 2;
+        QPainter painter(&dest);
+        painter.drawImage(x, y, scaled);
+        return dest;
     }
     std::pair<int,float> predictDigit(const torch::Tensor& tensor) {
         if (!model_loaded) return {};
@@ -116,16 +172,22 @@ public:
 
     QImage getProcessedImg()
     {
+        // 注意：原有的实现只是缩放和灰度，没有裁剪居中。
+        // 如果你其他地方调用了 getProcessedImg，可能会影响识别效果。
+        // 因此这里也改成完整的预处理（保持原有行为一致性）
         QImage img(canvas);
-        img = img.scaled(28,28,Qt::IgnoreAspectRatio,Qt::SmoothTransformation);
+        img = cropToContent(img);
+        if (img.isNull()) return QImage();
+        img = resizeAndPad(img, 28);
         img = img.convertToFormat(QImage::Format_Grayscale8);
         return img;
     }
-
     QImage getProcessedImg(QImage _img)
     {
         QImage img(_img);
-        img = img.scaled(28,28,Qt::IgnoreAspectRatio,Qt::SmoothTransformation);
+        img = cropToContent(img);
+        if (img.isNull()) return QImage();
+        img = resizeAndPad(img, 28);
         img = img.convertToFormat(QImage::Format_Grayscale8);
         return img;
     }
@@ -246,32 +308,76 @@ private:
     //     return imgList;
     // }
 
+    // QList<QImage> splitDigits() {
+    //     QList<QImage> result;
+    //     // 使用原始画板图像（未缩放）
+    //     QImage original = canvas;
+    //     if (original.isNull()) return result;
+
+    //     // 转为灰度，便于判断
+    //     QImage gray = original.convertToFormat(QImage::Format_Grayscale8);
+    //     int w = gray.width();
+    //     int h = gray.height();
+
+    //     // 垂直投影：统计每一列白色像素数量（假设黑底白字，白色为笔画）
+    //     QVector<int> whiteCnt(w, 0);
+    //     for (int x = 0; x < w; ++x) {
+    //         for (int y = 0; y < h; ++y) {
+    //             if (qGray(gray.pixel(x, y)) > 200)   // 白色阈值
+    //                 whiteCnt[x]++;
+    //         }
+    //     }
+
+    //     // 查找连续的非空白列区间
+    //     QList<QPair<int,int>> segments;
+    //     int x = 0;
+    //     const int minWidth = 8;   // 最小数字宽度（原始图像上的像素）
+    //     while (x < w) {
+    //         // 跳过空白列（注意先判断边界）
+    //         while (x < w && whiteCnt[x] == 0) ++x;
+    //         if (x >= w) break;
+    //         int start = x;
+    //         while (x < w && whiteCnt[x] > 0) ++x;
+    //         int end = x - 1;
+    //         if (end - start + 1 >= minWidth) {
+    //             segments.append({start, end});
+    //         }
+    //     }
+
+    //     // 对每个分割区域，裁剪并预处理为 28x28 灰度图
+    //     for (const auto& seg : segments) {
+    //         QRect rect(seg.first, 0, seg.second - seg.first + 1, h);
+    //         QImage digit = gray.copy(rect);
+    //         // 缩放到 28x28，转为灰度（已经是灰度），可选反色
+    //         digit = digit.scaled(28, 28, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    //         digit = digit.convertToFormat(QImage::Format_Grayscale8);
+    //         // 如果模型训练时使用白底黑字，则需反色，这里假设黑底白字（与画板一致）
+    //         // digit.invertPixels();   // 根据你的模型决定
+    //         result.append(digit);
+    //     }
+    //     return result;
+    // }
     QList<QImage> splitDigits() {
         QList<QImage> result;
-        // 使用原始画板图像（未缩放）
         QImage original = canvas;
         if (original.isNull()) return result;
 
-        // 转为灰度，便于判断
         QImage gray = original.convertToFormat(QImage::Format_Grayscale8);
         int w = gray.width();
         int h = gray.height();
 
-        // 垂直投影：统计每一列白色像素数量（假设黑底白字，白色为笔画）
         QVector<int> whiteCnt(w, 0);
         for (int x = 0; x < w; ++x) {
             for (int y = 0; y < h; ++y) {
-                if (qGray(gray.pixel(x, y)) > 200)   // 白色阈值
+                if (qGray(gray.pixel(x, y)) > 50)   // 黑底白字时白色笔画 > 50
                     whiteCnt[x]++;
             }
         }
 
-        // 查找连续的非空白列区间
         QList<QPair<int,int>> segments;
         int x = 0;
-        const int minWidth = 8;   // 最小数字宽度（原始图像上的像素）
+        const int minWidth = 8;
         while (x < w) {
-            // 跳过空白列（注意先判断边界）
             while (x < w && whiteCnt[x] == 0) ++x;
             if (x >= w) break;
             int start = x;
@@ -282,16 +388,15 @@ private:
             }
         }
 
-        // 对每个分割区域，裁剪并预处理为 28x28 灰度图
         for (const auto& seg : segments) {
             QRect rect(seg.first, 0, seg.second - seg.first + 1, h);
             QImage digit = gray.copy(rect);
-            // 缩放到 28x28，转为灰度（已经是灰度），可选反色
-            digit = digit.scaled(28, 28, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-            digit = digit.convertToFormat(QImage::Format_Grayscale8);
-            // 如果模型训练时使用白底黑字，则需反色，这里假设黑底白字（与画板一致）
-            // digit.invertPixels();   // 根据你的模型决定
-            result.append(digit);
+            // 对每个数字区域进行裁剪居中缩放
+            digit = cropToContent(digit);
+            if (!digit.isNull()) {
+                digit = resizeAndPad(digit, 28);
+                result.append(digit);
+            }
         }
         return result;
     }

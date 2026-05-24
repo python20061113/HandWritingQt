@@ -13,7 +13,7 @@ DEFINES += NOMINMAX
 DEFINES += _USE_MATH_DEFINES
 
 # ==================== LibTorch 配置（基于你的实际文件列表） ====================
-LIBTORCH_BASE = D:/libtorch-win-shared-with-deps-debug-2.11.0+cu128/libtorch
+LIBTORCH_BASE = D:\libtorch\libtorch
 
 # 头文件路径（两个都需要）
 INCLUDEPATH += $$LIBTORCH_BASE/include
